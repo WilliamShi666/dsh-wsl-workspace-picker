@@ -6,6 +6,12 @@ DeepSeek Harness Web UI 增强版工作区目录选择器：一键直达 `/mnt` 
 
 | [English](README.md) |
 
+## 截图
+
+![dsh-wsl-workspace-picker 对话框](assets/workspace-picker-demo.png)
+
+增强版"选择工作区目录"对话框：顶部为 `/mnt` Windows 盘符快捷访问行、常显路径输入框、从 `/` 开始的完整面包屑。
+
 ## 为什么需要它
 
 DSH 自带的目录选择对话框（侧边栏工作区"+"按钮和对话页工作区选择器背后的对话框）默认打开 Linux 主目录，并且**面包屑在"主目录"处截断**。在 WSL 下，Windows 盘位于 `/mnt/c`、`/mnt/d`……只能通过面包屑旁一个极不显眼的铅笔图标输入路径才能到达——大多数用户根本找不到它，面包屑也永远点不到 `/mnt`。

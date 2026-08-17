@@ -6,6 +6,12 @@ Enhanced workspace-directory browser for the [DeepSeek Harness](https://github.c
 
 | [中文说明](README.zh.md) |
 
+## Screenshot
+
+![dsh-wsl-workspace-picker dialog](assets/workspace-picker-demo.png)
+
+The enhanced "Select Workspace Directory" dialog: quick-access chips for `/mnt` Windows drives at the top, the always-visible path input, and full breadcrumbs from `/`.
+
 ## Why
 
 The stock in-app directory picker (the dialog behind the sidebar workspaces "+" button and the conversation-hero workspace picker) starts at the Linux home directory and **folds its breadcrumbs at home**. Under WSL, Windows drives live at `/mnt/c`, `/mnt/d`, … — reachable only by typing a path into a barely visible pencil-glyph editor that most users never find, and never clickable through the breadcrumbs at all.
