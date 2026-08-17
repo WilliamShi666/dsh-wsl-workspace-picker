@@ -36,5 +36,9 @@
       ]
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WilliamShi666/dsh-wsl-workspace-picker.git"
+  },
   "license": "MIT"
 }
