@@ -40,5 +40,20 @@
     "type": "git",
     "url": "git+https://github.com/WilliamShi666/dsh-wsl-workspace-picker.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-api-remotes": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-locale": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-runtime": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-primitives": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-slots": "^0.1.0-rc.6",
+    "@types/react": "^19.2.18",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
 }
