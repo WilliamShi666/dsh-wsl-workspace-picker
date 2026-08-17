@@ -1,4 +1,4 @@
-# dsh-quick-workspace-picker
+# dsh-wsl-workspace-picker
 
 [![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
 
@@ -20,7 +20,7 @@ This plugin shadows the stock dialog with a single-pane browser that makes every
 ## Install
 
 ```sh
-dsh plugin --profile web add dsh-quick-workspace-picker
+dsh plugin --profile web add dsh-wsl-workspace-picker
 ```
 
 Restart `dsh web` and refresh the browser page. Open the workspace picker via the sidebar workspaces "+" button (or the conversation-hero workspace picker) — the enhanced dialog appears in place of the stock one.
@@ -28,7 +28,7 @@ Restart `dsh web` and refresh the browser page. Open the workspace picker via th
 Uninstall:
 
 ```sh
-dsh plugin --profile web remove dsh-quick-workspace-picker
+dsh plugin --profile web remove dsh-wsl-workspace-picker
 ```
 
 ## How it works
@@ -38,7 +38,7 @@ The browser half of this dual-face package registers into both `directoryFlow` s
 The listing itself reuses the host's existing `browse` capability over the client runtime (`ctx.workspaces.listDirectory` / `createDirectory`) — no host-side code, no filesystem access of its own.
 
 ```
-dsh-quick-workspace-picker/
+dsh-wsl-workspace-picker/
 ├── package.json      # dsh.bundle.patch + dsh.client (dual-face declaration)
 ├── cordis.patch.yml  # loader-entry insertion
 └── lib/

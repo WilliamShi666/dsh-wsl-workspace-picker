@@ -1,4 +1,4 @@
-# dsh-quick-workspace-picker bundle layer.
+# dsh-wsl-workspace-picker bundle layer.
 #
 # Mounts the enhanced workspace directory browser as an ordinary loader
 # entry. The node half is an empty apply (the browser half ships via
@@ -11,5 +11,5 @@
 # the sidebar workspaces "+" button and the conversation hero workspace
 # picker.
 - insert:
-    - id: quick-workspace-picker
-      name: 'dsh-quick-workspace-picker'
+    - id: dsh-wsl-workspace-picker
+      name: 'dsh-wsl-workspace-picker'

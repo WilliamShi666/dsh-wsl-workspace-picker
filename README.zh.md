@@ -1,4 +1,4 @@
-# dsh-quick-workspace-picker
+# dsh-wsl-workspace-picker
 
 [![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
 
@@ -20,7 +20,7 @@ DSH 自带的目录选择对话框（侧边栏工作区"+"按钮和对话页工�
 ## 安装
 
 ```sh
-dsh plugin --profile web add dsh-quick-workspace-picker
+dsh plugin --profile web add dsh-wsl-workspace-picker
 ```
 
 重启 `dsh web` 并刷新浏览器页面。通过侧边栏工作区"+"按钮（或对话页工作区选择器）打开选择器，即可看到增强版对话框。
@@ -28,7 +28,7 @@ dsh plugin --profile web add dsh-quick-workspace-picker
 卸载：
 
 ```sh
-dsh plugin --profile web remove dsh-quick-workspace-picker
+dsh plugin --profile web remove dsh-wsl-workspace-picker
 ```
 
 ## 工作原理
@@ -38,7 +38,7 @@ dsh plugin --profile web remove dsh-quick-workspace-picker
 目录列表复用 host 端现有的 `browse` 能力（经客户端运行时 `ctx.workspaces.listDirectory` / `createDirectory`）——无任何 host 侧代码，不自行访问文件系统。
 
 ```
-dsh-quick-workspace-picker/
+dsh-wsl-workspace-picker/
 ├── package.json      # dsh.bundle.patch + dsh.client（dual-face 声明）
 ├── cordis.patch.yml  # loader 条目插入
 └── lib/
