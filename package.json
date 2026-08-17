@@ -1,6 +1,6 @@
 {
   "name": "dsh-wsl-workspace-picker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Enhanced workspace directory browser for the dsh web UI: quick access to /mnt Windows drives, full breadcrumb ancestry from the filesystem root, and an always-visible path input.",
   "keywords": [
     "deepseek-harness",
