@@ -47,12 +47,17 @@ dsh plugin --profile web remove dsh-wsl-workspace-picker
 dsh-wsl-workspace-picker/
 ├── package.json      # dsh.bundle.patch + dsh.client（dual-face 声明）
 ├── cordis.patch.yml  # loader 条目插入
+├── scripts/build.mjs # ESBuild：src/ → lib/
+├── src/
+│   ├── client.tsx    # 浏览器半（TypeScript 源码）
+│   ├── styles.ts     # 对话框样式 + 注入
+│   └── index.ts      # host 半（空 apply）
 └── lib/
-    ├── index.js      # host 半（空 apply）
-    └── client.js     # 浏览器半（手写 __ModuleLoader__ bundle）
+    ├── index.js      # host 半（构建产物）
+    └── client.js     # 浏览器半（构建产物：__ModuleLoader__ bundle）
 ```
 
-client bundle 为手写 CJS，依赖 shell 模块表（`react`、`react/jsx-runtime`、`@deepseek-ai/dsh-client-ui-primitives` 等），无需构建步骤。
+浏览器半使用 TypeScript 编写，由 ESBuild 编译（`npm run build`）。运行时依赖（`react`、`react/jsx-runtime`、`@deepseek-ai/dsh-client-ui-primitives` 等）保持 external，加载时经 web shell 模块表解析，与官方 client bundle 一致。`npm run typecheck` 执行 `tsc --noEmit` 类型检查。
 
 ## 兼容性
 

@@ -47,12 +47,21 @@ The listing itself reuses the host's existing `browse` capability over the clien
 dsh-wsl-workspace-picker/
 ├── package.json      # dsh.bundle.patch + dsh.client (dual-face declaration)
 ├── cordis.patch.yml  # loader-entry insertion
+├── scripts/build.mjs # ESBuild: src/ → lib/
+├── src/
+│   ├── client.tsx    # browser half (TypeScript source)
+│   ├── styles.ts     # dialog stylesheet + injection
+│   └── index.ts      # host half (empty apply)
 └── lib/
-    ├── index.js      # host half (empty apply)
-    └── client.js     # browser half (hand-written __ModuleLoader__ bundle)
+    ├── index.js      # host half (built)
+    └── client.js     # browser half (built: __ModuleLoader__ bundle)
 ```
 
-The client bundle is hand-written CJS against the shell's module table (`react`, `react/jsx-runtime`, `@deepseek-ai/dsh-client-ui-primitives`, …) — no build step required.
+The browser half is written in TypeScript and compiled with ESBuild
+(`npm run build`). Runtime imports (`react`, `react/jsx-runtime`,
+`@deepseek-ai/dsh-client-ui-primitives`, …) are external: they resolve
+through the web shell's module table at load time, exactly like the official
+client bundles. `npm run typecheck` runs `tsc --noEmit`.
 
 ## Compatibility
 
