@@ -1,0 +1,15 @@
+# dsh-quick-workspace-picker bundle layer.
+#
+# Mounts the enhanced workspace directory browser as an ordinary loader
+# entry. The node half is an empty apply (the browser half ships via
+# exports["./client"] and the package.json dsh.client declaration, the same
+# dual-face shape as @deepseek-ai/dsh-client-ui-directory-picker-browse).
+#
+# The browser half registers into the two directory-flow slots at priority
+# -10, shadowing the stock browse dialog (registered at 0; lowest priority
+# wins), so the picker replaces the default dialog in both entry points:
+# the sidebar workspaces "+" button and the conversation hero workspace
+# picker.
+- insert:
+    - id: quick-workspace-picker
+      name: 'dsh-quick-workspace-picker'
