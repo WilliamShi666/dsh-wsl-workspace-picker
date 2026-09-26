@@ -2,8 +2,9 @@
 //
 // Enhanced in-app workspace-directory browser, shadowing the stock dialog
 // (slot priority −10) in both directory-flow holes:
-// - quick-access chips: Home, /, /mnt, /mnt/c … /mnt/f — one click to any
-//   Windows drive under WSL;
+// - quick-access chips: Home, /, and the mount points that exist on the host
+//   (WSL drives under /mnt, external volumes under macOS /Volumes) —
+//   discovered at dialog open;
 // - an always-visible path input (type /mnt/d/projects, press Enter);
 // - full breadcrumb ancestry from the filesystem root (the stock dialog
 //   folds them at home, which made /mnt unreachable by clicking);
@@ -89,6 +90,23 @@ function currentOf(level: DirectoryListing | null, path: string | undefined): bo
   return path === undefined ? level.path === level.home : level.path === path;
 }
 
+// ── mount discovery ────────────────────────────────────────────────────────
+
+/** Mount roots probed once per dialog open; absent roots contribute nothing. */
+const MOUNT_ROOTS = ["/mnt", "/Volumes"];
+
+/** Cap on chips contributed by a single discovered root (drive letters, external disks). */
+const DRIVE_CHIP_LIMIT = 8;
+
+/** The quick-access row shown while the first discovery pass is in flight: the original hard-coded WSL mounts. */
+const LEGACY_MOUNT_CHIPS: Array<{ name: string; path: string }> = [
+  { name: "/mnt", path: "/mnt" },
+  { name: "/mnt/c", path: "/mnt/c" },
+  { name: "/mnt/d", path: "/mnt/d" },
+  { name: "/mnt/e", path: "/mnt/e" },
+  { name: "/mnt/f", path: "/mnt/f" }
+];
+
 // ── the browser dialog ─────────────────────────────────────────────────────
 
 interface BrowserProps {
@@ -110,6 +128,8 @@ function EnhancedDirectoryBrowser({ open, busy, listDirectory, createDirectory, 
   const [folderDraft, setFolderDraft] = useState<string | null>(null);
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  /** Discovered mount chips; null while the first discovery pass is in flight. */
+  const [mountEntries, setMountEntries] = useState<Array<{ name: string; path: string }> | null>(null);
   const requestSeq = useRef(0);
   const scanController = useRef<AbortController | null>(null);
 
@@ -170,15 +190,50 @@ function EnhancedDirectoryBrowser({ open, busy, listDirectory, createDirectory, 
     setCreateError(null);
   }, [open, navigate, supersede]);
 
-  /** The chip row: host home, the filesystem root, /mnt, and the WSL drive mounts. */
+  /**
+   * One discovery pass per dialog open: probe the known mount roots and
+   * surface what is actually mounted there. An absent root (no /mnt on
+   * macOS, no /Volumes on WSL) fails quietly and contributes nothing, so
+   * the same build serves WSL, macOS, and plain Linux hosts without any
+   * per-user configuration.
+   */
+  useEffect(() => {
+    if (!open) return;
+    setMountEntries(null);
+    const controller = new AbortController();
+    let cancelled = false;
+    void (async () => {
+      const found: Array<{ name: string; path: string }> = [];
+      for (const root of MOUNT_ROOTS) {
+        if (cancelled) return;
+        try {
+          const probe = await listDirectory(root, controller.signal);
+          found.push({ name: probe.path, path: probe.path });
+          for (const entry of probe.entries.filter((candidate) => !candidate.hidden).slice(0, DRIVE_CHIP_LIMIT)) {
+            found.push({ name: entry.name, path: entry.path });
+          }
+        } catch {
+          // Root absent on this host, or the dialog closed mid-flight.
+        }
+      }
+      if (!cancelled) setMountEntries(found);
+    })();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [open, listDirectory]);
+
+  /**
+   * The chip row: host home, the filesystem root, and the mount points that
+   * actually exist on the host. While the first discovery pass is in flight
+   * the legacy WSL row stays visible so the dialog never renders without
+   * shortcuts.
+   */
   const quickEntries: Array<{ name: string; path: string | undefined }> = [
     { name: t("browser.home"), path: undefined },
     { name: "/", path: "/" },
-    { name: "/mnt", path: "/mnt" },
-    { name: "/mnt/c", path: "/mnt/c" },
-    { name: "/mnt/d", path: "/mnt/d" },
-    { name: "/mnt/e", path: "/mnt/e" },
-    { name: "/mnt/f", path: "/mnt/f" }
+    ...(mountEntries === null ? LEGACY_MOUNT_CHIPS : mountEntries)
   ];
 
   const sep = level === null ? "/" : separatorOf(level);

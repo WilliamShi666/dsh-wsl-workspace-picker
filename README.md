@@ -18,7 +18,7 @@ The stock in-app directory picker (the dialog behind the sidebar workspaces "+" 
 
 This plugin shadows the stock dialog with a single-pane browser that makes every path reachable:
 
-- **Quick-access chips** — Home, `/`, `/mnt`, `/mnt/c`, `/mnt/d`, `/mnt/e`, `/mnt/f` — one click to any Windows drive under WSL.
+- **Quick-access chips** — Home, `/`, and every mount point discovered on the host: the Windows drives under `/mnt` (WSL) or the volumes under `/Volumes` (macOS), one click each.
 - **An always-visible path input** — type any absolute path (e.g. `/mnt/d/projects`) and press Enter.
 - **Full breadcrumb ancestry from `/`** — click up and down through the whole filesystem; no more home-folding dead end.
 - **New-folder creation** and a **hidden-files toggle**, like the stock dialog.
@@ -66,7 +66,7 @@ client bundles. `npm run typecheck` runs `tsc --noEmit`.
 ## Compatibility
 
 - DeepSeek Harness `0.1.0-rc.6` and later (web profile)
-- Any host where `/mnt/<drive>` Windows mounts exist (WSL); on other hosts the chips simply list directories that may not exist
+- Any host with mounted directories to reach: WSL (Windows drives appear under `/mnt`), macOS (external disks and disk images appear under `/Volumes`), or plain Linux with bind mounts under either root
 - Locales: English, 简体中文 (follows your UI language)
 
 ## Security & scope
