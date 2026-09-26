@@ -15,17 +15,42 @@
 // and resolve through the web shell's module table.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Button,
-  IconCheckOutline16,
-  IconChevronRightOutline14,
-  IconFolderClose16,
-  IconPlusOutline16,
-  Modal
-} from "@deepseek-ai/dsh-client-ui-primitives";
+import type { ReactElement } from "react";
+import { Button, Modal } from "@deepseek-ai/dsh-client-ui-primitives";
+import * as primitives from "@deepseek-ai/dsh-client-ui-primitives";
 import type { DirectoryListing } from "@deepseek-ai/dsh-api-remotes/client";
 import type { ClientContext } from "@deepseek-ai/dsh-client-runtime/client";
 import { injectStyles } from "./styles.js";
+
+// ── primitives icon compatibility ──────────────────────────────────────────
+//
+// The primitives package renamed its icon exports across DSH releases: the
+// size-suffixed names (IconFolderClose16, IconChevronRightOutline14, ...) were
+// replaced by weight-suffixed ones (IconFolderCloseRegular / ...Medium). A
+// stale named import resolves to undefined, React throws #130 when the dialog
+// renders, and the slot registry silently abdicates the crashed entry - the
+// stock dialog takes over and the plugin vanishes after an upgrade with zero
+// diagnostics. Resolve every known name at runtime so a future rename degrades
+// to the next name instead of a crash.
+
+type IconProps = { size?: number; className?: string; [key: string]: unknown };
+type IconComponent = (props: IconProps) => ReactElement | null;
+
+/** First export under names that is a callable component, or a no-op icon. */
+function resolveIcon(...names: string[]): IconComponent {
+  const mod = primitives as Record<string, unknown>;
+  for (const name of names) {
+    const value = mod[name];
+    if (typeof value === "function") return value as IconComponent;
+  }
+  console.error("[dsh-wsl-workspace-picker] no icon export matched " + names.join(" | ") + " - primitive renamed again?");
+  return () => null;
+}
+
+const IconFolderClose = resolveIcon("IconFolderClose16", "IconFolderCloseRegular", "IconFolderCloseMedium");
+const IconChevronRight = resolveIcon("IconChevronRightOutline14", "IconChevronRightOutlineRegular", "IconChevronRightOutlineMedium", "IconChevronRightOutline16");
+const IconCheck = resolveIcon("IconCheckOutline16", "IconCheckOutlineRegular", "IconCheckOutlineMedium");
+const IconPlus = resolveIcon("IconPlusOutline16", "IconPlusOutlineRegular", "IconPlusOutlineMedium");
 
 /** One child-directory row of a listing level. */
 type DirectoryEntry = DirectoryListing["entries"][number];
@@ -50,7 +75,10 @@ interface LocaleLike {
 
 interface ClientCtx {
   slots: SlotRegistryLike;
-  workspaces: WorkspacesLike;
+  /** Current name of the workspace service on the client context. */
+  uiWorkspace?: WorkspacesLike;
+  /** Legacy name (hosts before the ui-workspace rename). */
+  workspaces?: WorkspacesLike;
   locale: LocaleLike;
   effect(fn: () => unknown, name?: string): void;
 }
@@ -307,7 +335,7 @@ function EnhancedDirectoryBrowser({ open, busy, listDirectory, createDirectory, 
             <span className="qwp_crumbTrail" role="navigation">
               {crumbs.map((crumb, index) => (
                 <span key={crumb.path} className="qwp_crumbSeat">
-                  {index > 0 && <IconChevronRightOutline14 size={12} className="qwp_crumbChevron" />}
+                  {index > 0 && <IconChevronRight size={12} className="qwp_crumbChevron" />}
                   <button
                     type="button"
                     className="qwp_crumb"
@@ -324,9 +352,9 @@ function EnhancedDirectoryBrowser({ open, busy, listDirectory, createDirectory, 
         <div className="qwp_content">
           {visible.map((entry) => (
             <button key={entry.path} type="button" className="qwp_row" disabled={parentInert} onClick={() => enter(entry)}>
-              <IconFolderClose16 size={16} className="qwp_rowIcon" />
+              <IconFolderClose size={16} className="qwp_rowIcon" />
               <span className="qwp_rowName">{entry.name}</span>
-              <IconChevronRightOutline14 size={12} className="qwp_rowChevron" />
+              <IconChevronRight size={12} className="qwp_rowChevron" />
             </button>
           ))}
           {loading && (
@@ -351,7 +379,7 @@ function EnhancedDirectoryBrowser({ open, busy, listDirectory, createDirectory, 
         <div className="qwp_footerBar">
           <Button
             variant="outline"
-            icon={<IconPlusOutline16 size={14} />}
+            icon={<IconPlus size={14} />}
             disabled={targetPath === null || loading || parentInert}
             onClick={() => {
               setFolderDraft("");
@@ -368,7 +396,7 @@ function EnhancedDirectoryBrowser({ open, busy, listDirectory, createDirectory, 
             onClick={() => setShowHidden((prev) => !prev)}
           >
             {t("browser.showHidden")}
-            {showHidden && <IconCheckOutline16 size={14} />}
+            {showHidden && <IconCheck size={14} />}
           </button>
           <span className="qwp_footerGap" />
           <Button variant="outline" disabled={parentInert} onClick={onClose}>
@@ -461,7 +489,7 @@ function EnhancedDirectoryFlow(props: DirectoryFlowProps) {
 const LOCALE_NS = "dsh-wsl-workspace-picker";
 
 /** Required services (cordis fiber inject): the slot registry, the wire-facing workspace service, and locale. */
-export const inject: string[] = ["slots", "workspaces", "locale"];
+export const inject: string[] = ["slots", "uiWorkspace", "locale"];
 
 /**
  * Client plugin body: register the dialog's dictionaries and the enhanced
@@ -472,7 +500,12 @@ export const inject: string[] = ["slots", "workspaces", "locale"];
  */
 export function apply(ctx: ClientContext): void {
   const client = ctx as unknown as ClientCtx;
-  const { slots, workspaces, locale } = client;
+  const { slots, locale } = client;
+  const workspaces = client.uiWorkspace ?? client.workspaces;
+  if (!workspaces) {
+    console.error("[dsh-wsl-workspace-picker] client context has neither uiWorkspace nor workspaces; plugin disabled");
+    return;
+  }
   ctx.effect(() => {
     const disposers: Array<() => void> = [];
     const dictionaries: Array<[string, Record<string, string>]> = [
